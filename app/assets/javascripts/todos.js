@@ -59,15 +59,37 @@ $(function(){
     };
 
     App.saveModel = function(model, callback){
-        // DO SOME STUFF HERE TO PERSIST DATA
+        $.ajax({
+            url: this.urls.create.path,
+            type: this.urls.create.method,
+            data: { 
+                todo: model 
+            }
+        })
         callback(model);
-    };
+     };
 
     App.updateItem = function(model, callback){
-        // DO SOMETHING HERE
+        $.ajax({
+            url: 'todos/' + model.id + '.json',
+            type: 'put',
+        })
         callback(model);  
     };
 
+    App.deleteItem = function(model, callback){
+        $.ajax({
+            url: 'todos/' + model.id + '.json',
+            type: 'delete',
+            data: { 
+                todo: model 
+            }
+        })
+        callback(model);  
+    };
+
+
+    
     App.doThis = function(func){
     	func.apply(App);
         return this;
@@ -76,6 +98,7 @@ $(function(){
     App.urls = {
         index : { path: '/todos.json', method : 'get'},
         create : { path : '/todos.json', method : 'post'}
+        // update : { path : '/todos/:id.json'}, method : 'put'}
     };
 
     App.getItems = function(callback) {
@@ -106,9 +129,9 @@ $(function(){
     App.doThis(function(){
         var _this = this;
         
-        //CHECKBOX EVENTHANDLER
+        //TODO EVENTHANDLER
         $("#todos").on("click", ".todo", function(event){
-           console.log(this.dataset); 
+        
            var id = Number(this.dataset.id);
            if(event.target.name === "completed"){
                 console.log("FIRED!!!")
@@ -119,12 +142,18 @@ $(function(){
                     $(view).toggleClass("done-true");
                });
            }
+           else if(event.target.id === 'removeTodo'){
+            var view = this;
+            var todo = _this.findModel(id);
+            App.deleteItem(todo, function(data) {
+                $(view).remove();
+            });
+           }
         });
     });
 
     App.doThis(function() {
         var _this = this;
-
         _this.getItems(function(responseData) {
             _this.models = _this.models.concat(responseData);
             _this.renderAllModels();
